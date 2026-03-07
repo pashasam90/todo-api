@@ -1,72 +1,96 @@
+require('dotenv').config();
 const express = require("express");
-const app = express();
+const mongoose = require('mongoose');
 
+const app = express();
 app.use(express.json());
 
-let todos = [
-    { id: 1, title: 'Купить хлеб', completed: false, createdAt: '06.03.2026'},
-    { id: 2, title: 'Учить Node.js', completed: true, createdAt: '06.03.2026'}
-];
+// Подключение к MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB подключена'))
+  .catch(err => console.log('Ошибка:', err));
+
+// Схема и модель
+const todoSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  completed: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Todo = mongoose.model('Todo', todoSchema);
+
+
 
 //получить все задачи
-app.get('/todos', (req, res)=>{
-    res.json(todos);
+app.get('/todos', async (req, res)=>{
+    try {
+        const todos = await Todo.find();
+        if (!todos) return res.status(404).json("Not found");
+        res.json(todos);
+    } catch (err){
+        res.status(500).json({error: 'Ошибка сервера'});
+    }
+
 });
 
 //получить одну задачу
-app.get('/todos/:id', (req, res)=>{
-    const todo = todos.find(t => t.id ==req.params.id);
-    res.json(todo)
+app.get('/todos/:id', async (req, res)=>{
+    try {
+        const todo = await Todo.findOne({_id: req.params.id});
+        if (!todo) return res.status(404).json("Not found");
+        res.json(todo)
+    } catch (err){
+        res.status(500).json({error: "Ошибка сервера"});
+    }
 });
 
 //создать задачу
-app.post('/todos', (req, res)=>{
-    const {title} = req.body;
+app.post('/todos', async (req, res)=>{
+    const body = req.body;
 
-    if (!title) {
+    if (!body.title || !body.title.trim()) {
         return res.status(400).json({error: 'title обязательное поле'});
     };
+    try {
+        const newTodo = await Todo.create({title: body.title, completed: body.completed ?? false});
+        res.status(201).json(newTodo);
+    } catch (err){
+        res.status(500).json({error: "Ошибка сервера"});
+    }
 
-
-    const newTodo = {
-        id: todos.length + 1,
-        title: title,
-        completed: false,
-        createdAt: new Date().toLocaleDateString('ru-Ru')
-    };
-    todos.push(newTodo);
-    res.status(201).json(newTodo);
 });
 
 //обновить задачу
-app.put('/todos/:id', (req, res)=>{
+app.put('/todos/:id', async (req, res)=>{
     const {title, completed} = req.body;
-    const id = +req.params.id;
-    const index = todos.findIndex(obj => obj.id == id)
-    
-    if (index === -1 ) {
-        return res.status(404).json('Not found');
-    } else {
-        if (title !== undefined) {
-            todos[index].title = title;
-        }
-        if (completed !== undefined) {
-            todos[index].completed = completed;
-        }
-        res.json(todos[index]);
+    const id = req.params.id;
+    const updata = {};
+    if (title !== undefined){updata.title = title}
+    if (completed !== undefined){updata.completed = completed}
+    try {
+        const todo = await Todo.findByIdAndUpdate( id, updata, {new: true});
+        if (!todo) return res.status(404).json('Not found');
+        res.json(todo);
+    } catch (err) {
+        res.status(500).json({error: "Ошибка сервера"});
     }
+ 
 });
 
 //удалить задачу
-app.delete('/todos/:id', (req, res) => {
-    const id = +req.params.id;
-    const index = todos.findIndex(obj => obj.id == id);
-    if (index === -1){
-        return res.status(404).json('Not found');
-    } else {
-        todos.splice(index, 1);
-        res.json('Deleted');
+app.delete('/todos/:id', async (req, res) => {
+    const id = req.params.id;
+    try {
+        const todo = await Todo.findByIdAndDelete(id);
+        if (!todo) {
+            return res.status(404).json("Not found")
+        } else {
+            res.json('Deleted');
+        }
+    } catch (error) {
+        res.status(500).json({error: "Ошибка сервера"});
     }
+    
 });
 
 app.listen(3000, ()=>{
