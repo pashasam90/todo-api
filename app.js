@@ -8,6 +8,8 @@ connectDB();
 const todosRoutes = require('./routes/todos');
 app.use('/todos', todosRoutes);
 
+const authRoutes = require('./routes/auth');
+app.use('/auth', authRoutes);
 
 app.listen(3000, ()=>{
     console.log('Server is running!');
