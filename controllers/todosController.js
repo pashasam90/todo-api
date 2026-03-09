@@ -4,10 +4,9 @@ const Todo = require('../models/todo');
 async function getAll (req, res){
         try {
             const todos = await Todo.find();
-            if (!todos) return res.status(404).json("Not found");
             res.json(todos);
         } catch (err){
-            res.status(500).json({error: 'Ошибка сервера'});
+            return res.status(500).json({error: 'Ошибка сервера'});
         }
 }
 
@@ -17,21 +16,18 @@ async function getOne (req, res) {
         if (!todo) return res.status(404).json("Not found");
         res.json(todo)
     } catch (err){
-        res.status(500).json({error: "Ошибка сервера"});
+        return res.status(500).json({error: "Ошибка сервера"});
     }
 }
 
 async function createTodo(req, res){
     const body = req.body;
 
-    if (!body.title || !body.title.trim()) {
-        return res.status(400).json({error: 'title обязательное поле'});
-    };
     try {
         const newTodo = await Todo.create({title: body.title, completed: body.completed ?? false});
         res.status(201).json(newTodo);
     } catch (err){
-        res.status(500).json({error: "Ошибка сервера"});
+        return res.status(500).json({error: "Ошибка сервера"});
     }
 }
 
@@ -46,7 +42,7 @@ async function update(req, res) {
         if (!todo) return res.status(404).json('Not found');
         res.json(todo);
     } catch (err) {
-        res.status(500).json({error: "Ошибка сервера"});
+        return res.status(500).json({error: "Ошибка сервера"});
     }
 }
 
@@ -60,7 +56,7 @@ async function deleteTodo(req, res) {
             res.json('Deleted');
         }
     } catch (error) {
-        res.status(500).json({error: "Ошибка сервера"});
+        return res.status(500).json({error: "Ошибка сервера"});
     } 
 }
 
