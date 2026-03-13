@@ -3,6 +3,7 @@ const router = express.Router();
 const { getOne, getAll, createTodo, update, deleteTodo } = require("../controllers/todosController");
 const { body, param } = require('express-validator');
 const { validate } = require("../middleware/validate");
+const { authMiddleware } = require("../middleware/auth");
 
 
 

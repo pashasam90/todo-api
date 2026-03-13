@@ -1,62 +1,68 @@
 const Todo = require('../models/todo');
+const { AppError } = require('../middleware/error');
 
 
-async function getAll (req, res){
+
+async function getAll (req, res, next){
         try {
-            const todos = await Todo.find();
+            const todos = await Todo.find({userId: req.userId});
             res.json(todos);
         } catch (err){
-            return res.status(500).json({error: 'Ошибка сервера'});
+            return next(new AppError('Ошибка сервера', 500));
         }
 }
 
-async function getOne (req, res) {
+async function getOne (req, res, next) {
     try {
-        const todo = await Todo.findOne({_id: req.params.id});
-        if (!todo) return res.status(404).json("Not found");
+        const todo = await Todo.findOne({userId: req.userId, _id: req.params.id});
+        if (!todo) return next(new AppError("Не найдено", 404));
         res.json(todo)
     } catch (err){
-        return res.status(500).json({error: "Ошибка сервера"});
+        return next(new AppError("Ошибка сервера", 500));
     }
 }
 
-async function createTodo(req, res){
+async function createTodo(req, res, next){
     const body = req.body;
 
     try {
-        const newTodo = await Todo.create({title: body.title, completed: body.completed ?? false});
+        const newTodo = await Todo.create({userId: req.userId, title: body.title, completed: body.completed ?? false});
         res.status(201).json(newTodo);
     } catch (err){
-        return res.status(500).json({error: "Ошибка сервера"});
+        return next(new AppError("Ошибка сервера", 500));
     }
 }
 
-async function update(req, res) {
+async function update(req, res, next) {
     const {title, completed} = req.body;
     const id = req.params.id;
     const updata = {};
     if (title !== undefined){updata.title = title}
     if (completed !== undefined){updata.completed = completed}
     try {
-        const todo = await Todo.findByIdAndUpdate( id, updata, {new: true});
-        if (!todo) return res.status(404).json('Not found');
+        const todo = await Todo.findOneAndUpdate(
+            {userId: req.userId, _id: id}, 
+            updata, 
+            {new: true}
+        );
+        if (!todo) return next(new AppError("Не найдено", 404));
         res.json(todo);
     } catch (err) {
-        return res.status(500).json({error: "Ошибка сервера"});
+        return next(new AppError("Ошибка сервера", 500));
     }
 }
 
-async function deleteTodo(req, res) {
+async function deleteTodo(req, res, next) {
     const id = req.params.id;
     try {
-        const todo = await Todo.findByIdAndDelete(id);
+        const todo = await Todo.findOneAndDelete({userId: req.userId, _id: id});
         if (!todo) {
-            return res.status(404).json("Not found")
+            return next(new AppError("Не найдено", 404));
         } else {
             res.json('Deleted');
         }
     } catch (error) {
-        return res.status(500).json({error: "Ошибка сервера"});
+        return next(new AppError("Ошибка сервера", 500));
     } 
 }
 

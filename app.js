@@ -1,16 +1,19 @@
+require('dotenv').config();
 const express = require("express");
+const connectDB = require('./config/db');
+const todosRoutes = require('./routes/todos');
+const authRoutes = require('./routes/auth');
+const { authMiddleware } = require('./middleware/auth');
+const {errorHandling} = require('./middleware/error');
 
 const app = express();
 app.use(express.json());
-
-const connectDB = require('./config/db');
 connectDB();
-const todosRoutes = require('./routes/todos');
-app.use('/todos', todosRoutes);
-
-const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
+app.use('/todos', authMiddleware, todosRoutes);
 
-app.listen(3000, ()=>{
-    console.log('Server is running!');
-});
+app.use(errorHandling);
+
+app.listen( 3000, () => { 
+    console.log(`Server is running!`);
+} );
