@@ -4,6 +4,7 @@ const express = require('express');
 const app = express();
 const { AppError } = require('../middleware/error');
 
+// Middleware для проверки авторизации
 function authMiddleware (req, res, next) {
     try {
         const authHeader = req.headers['authorization'];

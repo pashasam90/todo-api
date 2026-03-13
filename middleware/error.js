@@ -7,7 +7,7 @@ class AppError extends Error {
     }
 }
 
-    
+// Middleware для обработки ошибок в Express
 function errorHandling (err, req, res, next) {
     if (err instanceof AppError) {
         return res.status(err.statusCode).json({ error: err.message, details: err.details });

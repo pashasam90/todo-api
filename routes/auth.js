@@ -5,6 +5,7 @@ const { body } = require('express-validator');
 const User = require('../models/user');
 const { register, userLogIn } = require('../controllers/authController');
 
+// Роут для регистрации нового пользователя
 router.post('/register', 
     [
         body('email', "Почта не соответсвует").isEmail().normalizeEmail(),
@@ -15,6 +16,7 @@ router.post('/register',
     register
 );
 
+// Роут для входа пользователя
 router.post('/login', 
     [
         body('email').isEmail().normalizeEmail(),

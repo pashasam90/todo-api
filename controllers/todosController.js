@@ -2,7 +2,7 @@ const Todo = require('../models/todo');
 const { AppError } = require('../middleware/error');
 
 
-
+// Получить все задачи для текущего пользователя
 async function getAll (req, res, next){
         try {
             const todos = await Todo.find({userId: req.userId});
@@ -12,6 +12,7 @@ async function getAll (req, res, next){
         }
 }
 
+// Получить одну задачу по id для текущего пользователя
 async function getOne (req, res, next) {
     try {
         const todo = await Todo.findOne({userId: req.userId, _id: req.params.id});
@@ -22,6 +23,7 @@ async function getOne (req, res, next) {
     }
 }
 
+// Создать новую задачу для текущего пользователя
 async function createTodo(req, res, next){
     const body = req.body;
 
@@ -33,6 +35,7 @@ async function createTodo(req, res, next){
     }
 }
 
+// Обновить задачу по id для текущего пользователя
 async function update(req, res, next) {
     const {title, completed} = req.body;
     const id = req.params.id;
@@ -52,6 +55,7 @@ async function update(req, res, next) {
     }
 }
 
+// Удалить задачу по id для текущего пользователя
 async function deleteTodo(req, res, next) {
     const id = req.params.id;
     try {

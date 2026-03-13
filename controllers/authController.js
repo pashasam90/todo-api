@@ -6,6 +6,7 @@ const { AppError } = require('../middleware/error');
 
 const SALT_ROUNDS = 10;
 
+// Регистрация нового пользователя
 async function register (req, res, next) {
     try {
         const body = req.body;
@@ -19,6 +20,7 @@ async function register (req, res, next) {
     }
 }
 
+// Вход пользователя
 async function userLogIn (req, res, next) {
     const {email, password} = req.body;
     try{

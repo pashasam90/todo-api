@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const User = require('./user');
 
-// Схема и модель
+// Define the Todo schema
 const todoSchema = new mongoose.Schema({
     userId: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true},
     title: { type: String, required: true },
